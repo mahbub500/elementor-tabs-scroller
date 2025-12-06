@@ -1,6 +1,4 @@
-/*/*/* ---------------------------------------------------
-   OUTER WRAPPER â€” HOLDS ARROWS + HIDES OVERFLOW
----------------------------------------------------- */
+
 .e-n-tabs-heading {
     position: relative;
     padding: 0 40px; /* space for arrows */
@@ -206,3 +204,12 @@
 }
 
 /* etcâ€¦ (your existing tab title styles) */
+
+.e-n-tabs-content__inner > [role="tabpanel"] {
+    display: none;
+}
+
+/* Show ONLY the active panel */
+.e-n-tabs-content__inner > [role="tabpanel"].e-active {
+    display: flex;  /* or block, depending on your layout */
+}

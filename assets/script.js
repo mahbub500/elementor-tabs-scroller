@@ -1,120 +1,122 @@
 jQuery(function ($) {
 
     var isAnimating = false;
-    var duration = 600; // ms – adjust for slower/faster fade
+    var duration = 600; // ms – adjust for slower/faster sliding
 
-    // 1) Prepare each tabs heading: wrap titles + inject arrows
-    $('.e-n-tabs-heading').each(function () {
-        var $heading = $(this);
+    // 1) Setup for each tabs widget
+    $('.e-n-tabs').each(function () {
+        var $tabsRoot = $(this);
+        var $heading  = $tabsRoot.find('.e-n-tabs-heading');
+        var $content  = $tabsRoot.find('.e-n-tabs-content');
 
-        // Wrap all direct .e-n-tab-title in a scrollable list if not yet wrapped
-        if (!$heading.find('.e-n-tabs-heading__list').length) {
+        // --- HEADER: wrap titles into scrollable list ---
+        if ($heading.length && !$heading.find('.e-n-tabs-heading__list').length) {
             var $titles = $heading.children('.e-n-tab-title');
             $titles.wrapAll('<div class="e-n-tabs-heading__list"></div>');
         }
 
-        // Add left arrow if missing
+        // Add arrows if not present
         if (!$heading.find('.tab-arrow-left').length) {
             $heading.prepend('<div class="tab-arrow tab-arrow-left" aria-hidden="true">←</div>');
         }
-
-        // Add right arrow if missing
         if (!$heading.find('.tab-arrow-right').length) {
             $heading.append('<div class="tab-arrow tab-arrow-right" aria-hidden="true">→</div>');
+        }
+
+        // --- CONTENT: wrap panels in inner for sliding ---
+        if ($content.length && !$content.find('.e-n-tabs-content__inner').length) {
+            var $panels = $content.children('[data-tab-index]');
+            $panels.wrapAll('<div class="e-n-tabs-content__inner"></div>');
         }
     });
 
 
     // -------------------------------
-    // RIGHT ARROW → rotate forward
-    // [1,2,3,4,5,6,7] -> [2,3,4,5,6,7,1]
-    // Visually: 2nd smoothly becomes 1st, 1st slowly hides
+    // RIGHT ARROW → slide left (R→L)
+    // [1,2,3,4,5,6,7] → [2,3,4,5,6,7,1]
     // -------------------------------
     $(document).on('click', '.tab-arrow-right', function () {
         if (isAnimating) return;
         isAnimating = true;
 
         var $heading  = $(this).closest('.e-n-tabs-heading');
-        var $tabsRoot = $heading.closest('.e-n-tabs');            // wrapper of heading + content
-        var $list     = $heading.find('.e-n-tabs-heading__list'); // row of tab titles
-        var $tabs     = $list.children('.e-n-tab-title');
+        var $tabsRoot = $heading.closest('.e-n-tabs');
+        var $list     = $heading.find('.e-n-tabs-heading__list');
+        var $content  = $tabsRoot.find('.e-n-tabs-content');
+        var $inner    = $content.find('.e-n-tabs-content__inner');
 
-        if ($tabs.length <= 1) {
+        var $tabs   = $list.children('.e-n-tab-title');
+        var $panels = $inner.children('[data-tab-index]');
+
+        if ($tabs.length <= 1 || $panels.length <= 1) {
             isAnimating = false;
             return;
         }
 
-        var $oldFirst = $tabs.eq(0);              // current first tab
-        var $newFirst = $tabs.eq(1);              // will become first
-        if (!$newFirst.length) $newFirst = $oldFirst;
+        var $firstTab   = $tabs.eq(0);
+        var $secondTab  = $tabs.eq(1);
+        var $firstPanel = $panels.eq(0);
 
-        // 1) Rotate DOM: first -> end
-        $oldFirst.appendTo($list);
+        if (!$secondTab.length) $secondTab = $firstTab;
 
-        // 2) Prepare fade states (no transition yet)
-        $oldFirst.css({
-            transition: 'none',
-            opacity: 1
+        var tabStep = $firstTab.outerWidth(true); // slide distance for header
+
+        // 1) Animate header list & content inner left (R→L)
+        $list.css({
+            transition: 'transform ' + duration + 'ms ease-in-out',
+            transform: 'translateX(-' + tabStep + 'px)'
         });
 
-        $newFirst.css({
-            transition: 'none',
-            opacity: 0
+        // Panels: each is 100% width; slide one full panel
+        $inner.css({
+            transition: 'transform ' + duration + 'ms ease-in-out',
+            transform: 'translateX(-100%)'
         });
 
-        // 3) Cross-fade: old first fades out, new first fades in
-        requestAnimationFrame(function () {
-            $oldFirst.css({
-                transition: 'opacity ' + duration + 'ms ease-out',
-                opacity: 0
-            });
-
-            $newFirst.css({
-                transition: 'opacity ' + duration + 'ms ease-in',
-                opacity: 1
-            });
-        });
-
-        // 4) After fade: cleanup + update active tab & content
+        // 2) After animation: reset transform, rotate DOM, update active
         setTimeout(function () {
-
-            // Clean inline styles
-            $oldFirst.css({
-                transition: '',
-                opacity: ''
+            // Reset transforms
+            $list.css({
+                transition: 'none',
+                transform: 'translateX(0)'
             });
-            $newFirst.css({
-                transition: '',
-                opacity: ''
+            $inner.css({
+                transition: 'none',
+                transform: 'translateX(0)'
             });
 
-            // New first in DOM (should be the same as $newFirst)
-            var $firstNow = $list.children('.e-n-tab-title').first();
-            var newIndex  = $firstNow.data('tab-index');
+            // Rotate header: first → end
+            $firstTab.appendTo($list);
+
+            // Rotate content: first panel → end
+            $firstPanel.appendTo($inner);
+
+            // New first tab & panel
+            var $newFirstTab = $list.children('.e-n-tab-title').first();
+            var newIndex     = $newFirstTab.data('tab-index');
 
             // Update header active state
             $list.children('.e-n-tab-title')
                 .attr('aria-selected', 'false')
                 .removeClass('elementor-active');
-
-            $firstNow
+            $newFirstTab
                 .attr('aria-selected', 'true')
                 .addClass('elementor-active');
 
-            // Update content active panel by data-tab-index
-            var $panels = $tabsRoot.find('.e-n-tabs-content > [data-tab-index]');
-            $panels.removeClass('e-active');
-            $panels.filter('[data-tab-index="' + newIndex + '"]').addClass('e-active');
+            // Update content active state (first panel corresponds to newIndex)
+            var $allPanels = $inner.children('[data-tab-index]');
+            $allPanels.removeClass('e-active');
+            $allPanels.filter('[data-tab-index="' + newIndex + '"]').addClass('e-active');
 
             isAnimating = false;
+
         }, duration);
     });
 
 
     // --------------------------------
-    // LEFT ARROW → rotate backward
-    // [3,4,5,6,7,1,2] -> [2,3,4,5,6,7,1]
-    // Visually: last tab smoothly appears as 1st, old 1st slowly hides
+    // LEFT ARROW → slide right (L→R)
+    // [...,1,2] → [2,3,4,5,6,7,1] style backwards rotation
     // --------------------------------
     $(document).on('click', '.tab-arrow-left', function () {
         if (isAnimating) return;
@@ -123,76 +125,83 @@ jQuery(function ($) {
         var $heading  = $(this).closest('.e-n-tabs-heading');
         var $tabsRoot = $heading.closest('.e-n-tabs');
         var $list     = $heading.find('.e-n-tabs-heading__list');
-        var $tabs     = $list.children('.e-n-tab-title');
+        var $content  = $tabsRoot.find('.e-n-tabs-content');
+        var $inner    = $content.find('.e-n-tabs-content__inner');
 
-        if ($tabs.length <= 1) {
+        var $tabs   = $list.children('.e-n-tab-title');
+        var $panels = $inner.children('[data-tab-index]');
+
+        if ($tabs.length <= 1 || $panels.length <= 1) {
             isAnimating = false;
             return;
         }
 
-        var $oldFirst = $tabs.eq(0);      // current first
-        var $last     = $tabs.last();     // will become new first
+        var $firstTab   = $tabs.eq(0);
+        var $lastTab    = $tabs.last();
+        var $firstPanel = $panels.eq(0);
+        var $lastPanel  = $panels.last();
 
-        // 1) Rotate DOM: last -> front
-        $last.prependTo($list);
+        var tabStep = $firstTab.outerWidth(true);
 
-        var $newFirst = $last;
+        // 1) Pre-rotate DOM: last → front (header + content)
+        $lastTab.prependTo($list);
+        $lastPanel.prependTo($inner);
 
-        // 2) Prepare fade states
-        $oldFirst.css({
+        // 2) Start from offset left by one item, then animate back to 0
+        $list.css({
             transition: 'none',
-            opacity: 1
+            transform: 'translateX(-' + tabStep + 'px)'
+        });
+        $inner.css({
+            transition: 'none',
+            transform: 'translateX(-100%)'
         });
 
-        $newFirst.css({
-            transition: 'none',
-            opacity: 0
-        });
-
-        // 3) Cross-fade: old first fades out, new first fades in
+        // 3) Animate back to 0 = visual slide L→R
         requestAnimationFrame(function () {
-            $oldFirst.css({
-                transition: 'opacity ' + duration + 'ms ease-out',
-                opacity: 0
+            $list.css({
+                transition: 'transform ' + duration + 'ms ease-in-out',
+                transform: 'translateX(0)'
             });
-
-            $newFirst.css({
-                transition: 'opacity ' + duration + 'ms ease-in',
-                opacity: 1
+            $inner.css({
+                transition: 'transform ' + duration + 'ms ease-in-out',
+                transform: 'translateX(0)'
             });
         });
 
-        // 4) After fade: cleanup + update active tab & content
+        // 4) After animation: clean up and set active
         setTimeout(function () {
 
-            $oldFirst.css({
-                transition: '',
-                opacity: ''
+            $list.css({
+                transition: 'none',
+                transform: 'translateX(0)'
             });
-            $newFirst.css({
-                transition: '',
-                opacity: ''
+            $inner.css({
+                transition: 'none',
+                transform: 'translateX(0)'
             });
 
-            var $firstNow = $list.children('.e-n-tab-title').first();
-            var newIndex  = $firstNow.data('tab-index');
+            var $newFirstTab = $list.children('.e-n-tab-title').first();
+            var newIndex     = $newFirstTab.data('tab-index');
 
-            // Headers
+            // Header active state
             $list.children('.e-n-tab-title')
                 .attr('aria-selected', 'false')
                 .removeClass('elementor-active');
-
-            $firstNow
+            $newFirstTab
                 .attr('aria-selected', 'true')
                 .addClass('elementor-active');
 
-            // Content
-            var $panels = $tabsRoot.find('.e-n-tabs-content > [data-tab-index]');
-            $panels.removeClass('e-active');
-            $panels.filter('[data-tab-index="' + newIndex + '"]').addClass('e-active');
+            // Content active state
+            var $allPanels = $inner.children('[data-tab-index]');
+            $allPanels.removeClass('e-active');
+            $allPanels.filter('[data-tab-index="' + newIndex + '"]').addClass('e-active');
 
             isAnimating = false;
+
         }, duration);
     });
 
 });
+
+
