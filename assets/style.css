@@ -93,11 +93,12 @@
 
 /* Container */
 .e-n-tabs-heading {
-    position: relative; 
-    padding: 0 40px;
-    overflow: hidden;
-    display: flex;
-    flex-wrap: nowrap;
+    position: relative;
+    padding: 0 40px;               /* space inside for arrows overlapping the list */
+    overflow: visible !important;  /* IMPORTANT: do NOT clip arrows */
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
 }
 
 /* Arrow buttons */
@@ -126,17 +127,7 @@
 /* -----------------------------------------
    WRAPPING FIX — KEEP ALL TABS IN ONE LINE
 ------------------------------------------ */
-.e-n-tabs-heading__list {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    scroll-behavior: smooth;
-    padding-left: 40px;   /* adjust if needed */
-    padding-right: 40px;  /* adjust if needed */
-    box-sizing: border-box;
-    gap: 0; /* no space unless you add margin */
-}
+
 
 /* Hide scrollbar but allow scroll */
 .e-n-tabs-heading__list::-webkit-scrollbar {
