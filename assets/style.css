@@ -1,0 +1,30 @@
+/* Container */
+.e-n-tabs-heading {
+    position: relative;
+    padding: 0 40px;
+    overflow: hidden;
+}
+
+/* Arrow buttons */
+.tab-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 20;
+    background: #fff;
+    padding: 5px 8px;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* Left arrow */
+.tab-arrow-left {
+    left: 5px;
+}
+
+/* Right arrow */
+.tab-arrow-right {
+    right: 5px;
+}
