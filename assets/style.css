@@ -1,5 +1,5 @@
 /*/*/* ---------------------------------------------------
-   OUTER WRAPPER — HOLDS ARROWS + HIDES OVERFLOW
+   OUTER WRAPPER â€” HOLDS ARROWS + HIDES OVERFLOW
 ---------------------------------------------------- */
 .e-n-tabs-heading {
     position: relative;
@@ -125,7 +125,7 @@
     right: 5px;
 }
 /* -----------------------------------------
-   WRAPPING FIX — KEEP ALL TABS IN ONE LINE
+   WRAPPING FIX â€” KEEP ALL TABS IN ONE LINE
 ------------------------------------------ */
 
 
@@ -135,7 +135,7 @@
 }
 
 /* -----------------------------------------
-   TAB ITEMS — PREVENT WRAP & STRETCH
+   TAB ITEMS â€” PREVENT WRAP & STRETCH
 ------------------------------------------ */
 .e-n-tabs-heading__tab {
     white-space: nowrap !important;
@@ -144,7 +144,7 @@
 }
 
 /* -----------------------------------------
-   TAB TITLE — YOUR CUSTOM PADDING
+   TAB TITLE â€” YOUR CUSTOM PADDING
 ------------------------------------------ */
 .e-n-tab-title {
     padding-left: 50px !important;
@@ -200,9 +200,9 @@
     overflow-x: auto !important;
     overflow-y: hidden !important;
     scroll-behavior: smooth;
-    padding-left: 40px;
+    padding-left: 6px;
     padding-right: 40px;
     box-sizing: border-box;
 }
 
-/* etc… (your existing tab title styles) */
+/* etcâ€¦ (your existing tab title styles) */

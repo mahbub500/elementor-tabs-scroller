@@ -1,7 +1,7 @@
 jQuery(function ($) {
 
     var isAnimating = false;
-    var duration = 600; // animation time in ms
+    var duration = 600; // ms – adjust for slower/faster fade
 
     // 1) Prepare each tabs heading: wrap titles + inject arrows
     $('.e-n-tabs-heading').each(function () {
@@ -26,107 +26,172 @@ jQuery(function ($) {
 
 
     // -------------------------------
-    // RIGHT ARROW → slide left (R→L)
-    // Order: [1,2,3,4,5,6,7] -> [2,3,4,5,6,7,1]
+    // RIGHT ARROW → rotate forward
+    // [1,2,3,4,5,6,7] -> [2,3,4,5,6,7,1]
+    // Visually: 2nd smoothly becomes 1st, 1st slowly hides
     // -------------------------------
     $(document).on('click', '.tab-arrow-right', function () {
         if (isAnimating) return;
-
-        var $heading = $(this).closest('.e-n-tabs-heading');
-        var $list    = $heading.find('.e-n-tabs-heading__list');
-        var $tabs    = $list.children('.e-n-tab-title');
-
-        if ($tabs.length <= 1) return;
-
         isAnimating = true;
 
-        var $first  = $tabs.first();
-        var $second = $tabs.eq(1);
-        if (!$second.length) $second = $first;
+        var $heading  = $(this).closest('.e-n-tabs-heading');
+        var $tabsRoot = $heading.closest('.e-n-tabs');            // wrapper of heading + content
+        var $list     = $heading.find('.e-n-tabs-heading__list'); // row of tab titles
+        var $tabs     = $list.children('.e-n-tab-title');
 
-        // Width of the first tab (including margin)
-        var stepWidth = $first.outerWidth(true);
+        if ($tabs.length <= 1) {
+            isAnimating = false;
+            return;
+        }
 
-        // 1) Animate list to the left by one tab width
-        $list.css({
-            transition: 'transform ' + duration + 'ms ease-in-out',
-            transform: 'translateX(-' + stepWidth + 'px)'
+        var $oldFirst = $tabs.eq(0);              // current first tab
+        var $newFirst = $tabs.eq(1);              // will become first
+        if (!$newFirst.length) $newFirst = $oldFirst;
+
+        // 1) Rotate DOM: first -> end
+        $oldFirst.appendTo($list);
+
+        // 2) Prepare fade states (no transition yet)
+        $oldFirst.css({
+            transition: 'none',
+            opacity: 1
         });
 
-        // 2) After animation: reset transform, move first to end, activate new first
-        setTimeout(function () {
+        $newFirst.css({
+            transition: 'none',
+            opacity: 0
+        });
 
-            // Reset transform without animation
-            $list.css({
-                transition: 'none',
-                transform: 'translateX(0)'
+        // 3) Cross-fade: old first fades out, new first fades in
+        requestAnimationFrame(function () {
+            $oldFirst.css({
+                transition: 'opacity ' + duration + 'ms ease-out',
+                opacity: 0
             });
 
-            // Reorder DOM: first → end
-            $first.appendTo($list);
+            $newFirst.css({
+                transition: 'opacity ' + duration + 'ms ease-in',
+                opacity: 1
+            });
+        });
 
-            // New order now rotated: [2,3,4,5,6,7,1]
-            // Active tab is the visual first (previous second)
-            var $newFirst = $list.children('.e-n-tab-title').first();
-            $newFirst.trigger('click'); // Elementor updates aria-selected/content
+        // 4) After fade: cleanup + update active tab & content
+        setTimeout(function () {
+
+            // Clean inline styles
+            $oldFirst.css({
+                transition: '',
+                opacity: ''
+            });
+            $newFirst.css({
+                transition: '',
+                opacity: ''
+            });
+
+            // New first in DOM (should be the same as $newFirst)
+            var $firstNow = $list.children('.e-n-tab-title').first();
+            var newIndex  = $firstNow.data('tab-index');
+
+            // Update header active state
+            $list.children('.e-n-tab-title')
+                .attr('aria-selected', 'false')
+                .removeClass('elementor-active');
+
+            $firstNow
+                .attr('aria-selected', 'true')
+                .addClass('elementor-active');
+
+            // Update content active panel by data-tab-index
+            var $panels = $tabsRoot.find('.e-n-tabs-content > [data-tab-index]');
+            $panels.removeClass('e-active');
+            $panels.filter('[data-tab-index="' + newIndex + '"]').addClass('e-active');
 
             isAnimating = false;
-
         }, duration);
     });
 
 
     // --------------------------------
-    // LEFT ARROW → slide right (L→R)
-    // From [3,4,5,6,7,1,2] -> [2,3,4,5,6,7,1]
+    // LEFT ARROW → rotate backward
+    // [3,4,5,6,7,1,2] -> [2,3,4,5,6,7,1]
+    // Visually: last tab smoothly appears as 1st, old 1st slowly hides
     // --------------------------------
     $(document).on('click', '.tab-arrow-left', function () {
         if (isAnimating) return;
-
-        var $heading = $(this).closest('.e-n-tabs-heading');
-        var $list    = $heading.find('.e-n-tabs-heading__list');
-        var $tabs    = $list.children('.e-n-tab-title');
-
-        if ($tabs.length <= 1) return;
-
         isAnimating = true;
 
-        var $first = $tabs.first();
-        var $last  = $tabs.last();
+        var $heading  = $(this).closest('.e-n-tabs-heading');
+        var $tabsRoot = $heading.closest('.e-n-tabs');
+        var $list     = $heading.find('.e-n-tabs-heading__list');
+        var $tabs     = $list.children('.e-n-tab-title');
 
-        var stepWidth = $first.outerWidth(true);
+        if ($tabs.length <= 1) {
+            isAnimating = false;
+            return;
+        }
 
-        // 1) Set initial offset to the left so we can animate back to the right
-        $list.css({
-            transition: 'none',
-            transform: 'translateX(-' + stepWidth + 'px)'
-        });
+        var $oldFirst = $tabs.eq(0);      // current first
+        var $last     = $tabs.last();     // will become new first
 
-        // 2) Immediately move last to front → order becomes [last,1,2,3,...]
+        // 1) Rotate DOM: last -> front
         $last.prependTo($list);
 
-        // 3) Animate back to transform(0) → visual slide from left to right
+        var $newFirst = $last;
+
+        // 2) Prepare fade states
+        $oldFirst.css({
+            transition: 'none',
+            opacity: 1
+        });
+
+        $newFirst.css({
+            transition: 'none',
+            opacity: 0
+        });
+
+        // 3) Cross-fade: old first fades out, new first fades in
         requestAnimationFrame(function () {
-            $list.css({
-                transition: 'transform ' + duration + 'ms ease-in-out',
-                transform: 'translateX(0)'
+            $oldFirst.css({
+                transition: 'opacity ' + duration + 'ms ease-out',
+                opacity: 0
+            });
+
+            $newFirst.css({
+                transition: 'opacity ' + duration + 'ms ease-in',
+                opacity: 1
             });
         });
 
-        // 4) After animation, clean up and set active tab
+        // 4) After fade: cleanup + update active tab & content
         setTimeout(function () {
 
-            $list.css({
-                transition: 'none',
-                transform: 'translateX(0)'
+            $oldFirst.css({
+                transition: '',
+                opacity: ''
+            });
+            $newFirst.css({
+                transition: '',
+                opacity: ''
             });
 
-            // New first tab (the one we moved from the end)
-            var $newFirst = $list.children('.e-n-tab-title').first();
-            $newFirst.trigger('click');
+            var $firstNow = $list.children('.e-n-tab-title').first();
+            var newIndex  = $firstNow.data('tab-index');
+
+            // Headers
+            $list.children('.e-n-tab-title')
+                .attr('aria-selected', 'false')
+                .removeClass('elementor-active');
+
+            $firstNow
+                .attr('aria-selected', 'true')
+                .addClass('elementor-active');
+
+            // Content
+            var $panels = $tabsRoot.find('.e-n-tabs-content > [data-tab-index]');
+            $panels.removeClass('e-active');
+            $panels.filter('[data-tab-index="' + newIndex + '"]').addClass('e-active');
 
             isAnimating = false;
-
         }, duration);
     });
 
