@@ -168,4 +168,41 @@
     background: #f5f5f5;
     border-radius: 4px;
 }
-*/*/
+*/
+
+.e-n-tabs-heading {
+    position: relative;
+    padding: 0 40px;
+    overflow: hidden; /* or visible if you don't want clipping */
+    display: flex !important;
+    flex-wrap: nowrap !important;
+}
+
+.tab-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 20;
+    background: #fff;
+    padding: 5px 8px;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+.tab-arrow-left  { left: 5px; }
+.tab-arrow-right { right: 5px; }
+
+.e-n-tabs-heading__list {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-behavior: smooth;
+    padding-left: 40px;
+    padding-right: 40px;
+    box-sizing: border-box;
+}
+
+/* etc… (your existing tab title styles) */
