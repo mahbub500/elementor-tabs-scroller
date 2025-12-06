@@ -1,8 +1,103 @@
-/* Container */
+/* ---------------------------------------------------
+   OUTER WRAPPER — HOLDS ARROWS + HIDES OVERFLOW
+---------------------------------------------------- */
 .e-n-tabs-heading {
     position: relative;
+    padding: 0 40px; /* space for arrows */
+    overflow: hidden; /* hide overflow outside scroll area */
+    display: flex !important;
+    flex-wrap: nowrap !important;
+}
+
+/* ---------------------------------------------------
+   ARROW BUTTONS
+---------------------------------------------------- */
+.tab-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 20;
+    background: #fff;
+    padding: 5px 8px;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* Left arrow */
+.tab-arrow-left {
+    left: 5px;
+}
+
+/* Right arrow */
+.tab-arrow-right {
+    right: 5px;
+}
+
+/* ---------------------------------------------------
+   TABS LIST (SCROLLABLE ROW)
+---------------------------------------------------- */
+.e-n-tabs-heading__list {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-behavior: smooth;
+    padding-left: 40px; 
+    padding-right: 40px; 
+    box-sizing: border-box;
+    gap: 0;
+}
+
+/* Hide scrollbar */
+.e-n-tabs-heading__list::-webkit-scrollbar {
+    display: none;
+}
+
+/* ---------------------------------------------------
+   TAB ITEM (NO WRAPPING)
+---------------------------------------------------- */
+.e-n-tabs-heading__tab {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: flex;
+}
+
+/* ---------------------------------------------------
+   TAB TITLE (YOUR CUSTOM PADDING)
+---------------------------------------------------- */
+.e-n-tab-title {
+    padding-left: 50px !important;
+    padding-right: 50px !important;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+/* Space between tabs */
+.e-n-tabs-heading__tab:not(:last-child) {
+    margin-right: 10px;
+}
+
+/* Active tab style (optional) */
+.e-n-tab-title.elementor-active {
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+
+/* Container */
+.e-n-tabs-heading {
+    position: relative; 
     padding: 0 40px;
     overflow: hidden;
+    display: flex;
+    flex-wrap: nowrap;
 }
 
 /* Arrow buttons */
@@ -27,4 +122,58 @@
 /* Right arrow */
 .tab-arrow-right {
     right: 5px;
+}
+/* -----------------------------------------
+   WRAPPING FIX — KEEP ALL TABS IN ONE LINE
+------------------------------------------ */
+.e-n-tabs-heading__list {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-behavior: smooth;
+    padding-left: 40px;   /* adjust if needed */
+    padding-right: 40px;  /* adjust if needed */
+    box-sizing: border-box;
+    gap: 0; /* no space unless you add margin */
+}
+
+/* Hide scrollbar but allow scroll */
+.e-n-tabs-heading__list::-webkit-scrollbar {
+    display: none;
+}
+
+/* -----------------------------------------
+   TAB ITEMS — PREVENT WRAP & STRETCH
+------------------------------------------ */
+.e-n-tabs-heading__tab {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: flex;
+}
+
+/* -----------------------------------------
+   TAB TITLE — YOUR CUSTOM PADDING
+------------------------------------------ */
+.e-n-tab-title {
+    padding-left: 50px !important;
+    padding-right: 50px !important;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+/* OPTIONAL: spacing between tabs */
+.e-n-tabs-heading__tab:not(:last-child) {
+    margin-right: 10px; /* increase or decrease */
+}
+
+/* OPTIONAL: smooth highlight */
+.e-n-tab-title.elementor-active {
+    background: #f5f5f5;
+    border-radius: 4px;
 }
