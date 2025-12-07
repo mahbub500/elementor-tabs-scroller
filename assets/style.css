@@ -135,3 +135,7 @@
     
     background-color: #f1f2f3 !important;
 }
+
+.slick-current{
+    display: flex !important;
+}
