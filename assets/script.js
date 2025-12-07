@@ -1,7 +1,4 @@
 jQuery(function ($) {
-    // ------------------------------
-    // Initialize main content slider
-    // ------------------------------
     const $contentSlider = $(".e-n-tabs-content").slick({
         slidesToShow: 1,
         slidesToScroll: 1,
@@ -11,9 +8,6 @@ jQuery(function ($) {
         asNavFor: ".e-n-tabs-heading"
     });
 
-    // ------------------------------
-    // Initialize heading slider (nav)
-    // ------------------------------
     const $headingSlider = $(".e-n-tabs-heading").slick({
         slidesToShow: 1,
         slidesToScroll: 1,
@@ -27,20 +21,48 @@ jQuery(function ($) {
         nextArrow: '<button type="button" class="slick-next"></button>'
     });
 
-    // ------------------------------
+    // Function to add active class to current tab
+    function updateActiveTab() {
+        const $slides = $headingSlider.find(".slick-slide:not(.slick-cloned)");
+
+        // Remove previous classes and aria
+        $slides
+            .removeClass("active-tab")
+            .addClass("not-active-tab")
+            .find(".e-n-tab-title")
+            .attr("aria-selected", "false");
+
+        // Add classes and aria to the current visible slide
+        const currentIndex = $headingSlider.slick("slickCurrentSlide");
+        const $currentSlide = $slides.eq(currentIndex);
+
+        $currentSlide
+            .addClass("active-tab")
+            .removeClass("not-active-tab")
+            .find(".e-n-tab-title")
+            .attr("aria-selected", "true");
+    }
+
     // Click handler for heading slides
-    // Just select the tab (do NOT move to first index)
-    // ------------------------------
     $headingSlider.on("click", ".slick-slide > div", function () {
         const index = $(this).closest("[data-slick-index]").data("slick-index");
 
-        // Sync both sliders to the clicked tab
+        // Sync both sliders
         $headingSlider.slick("slickGoTo", index);
         $contentSlider.slick("slickGoTo", index);
+
+        // Add active class
+        setTimeout(updateActiveTab, 50);
     });
 
-    // ------------------------------
-    // Optional: arrow click sync (already handled by Slick)
-    // If needed for custom behavior, can add here
-    // ------------------------------
+    // Click function for arrows
+    $headingSlider.on("click", ".slick-prev, .slick-next", function () {
+        setTimeout(updateActiveTab, 50); // small delay to let Slick update
+    });
+
+    // Update active tab after slider changes (e.g., swipe)
+    $headingSlider.on("afterChange", updateActiveTab);
+
+    // Initial set on page load
+    updateActiveTab();
 });

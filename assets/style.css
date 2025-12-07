@@ -127,3 +127,11 @@
     display: flex;
     justify-content: center;
 }
+
+.active-tab{
+    background-color: white !important;
+}
+.not-active-tab{
+    
+    background-color: #f1f2f3 !important;
+}
