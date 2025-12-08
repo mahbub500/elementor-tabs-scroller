@@ -35,28 +35,22 @@ jQuery(function ($) {
         // Add classes and aria to the current visible slide
         const currentIndex = $headingSlider.slick("slickCurrentSlide");
         const $currentSlide = $slides.eq(currentIndex);
+        const $currentButton = $currentSlide.find(".e-n-tab-title"); // <button ...>
 
         $currentSlide
             .addClass("active-tab")
-            .removeClass("not-active-tab")
-            .find(".e-n-tab-title")
-            .attr("aria-selected", "true");
+            .removeClass("not-active-tab");
+
+            // console.log(  $currentButton );
+
+        // Mark as selected and "press" the tab button
+        $currentButton
+            .attr("aria-selected", "true")
+            .trigger("click"); // programmatically press the tab
     }
-
-    // Click handler for heading slides
-    $headingSlider.on("click", ".slick-slide > div", function () {
-        const index = $(this).closest("[data-slick-index]").data("slick-index");
-
-        // Sync both sliders
-        $headingSlider.slick("slickGoTo", index);
-        $contentSlider.slick("slickGoTo", index);
-
-        // Add active class
-        setTimeout(updateActiveTab, 50);
-    });
-
     // Click function for arrows
     $headingSlider.on("click", ".slick-prev, .slick-next", function () {
+        $(".e-n-tab-title").attr("aria-selected", "false");
         setTimeout(updateActiveTab, 50); // small delay to let Slick update
     });
 
@@ -66,3 +60,5 @@ jQuery(function ($) {
     // Initial set on page load
     updateActiveTab();
 });
+
+
